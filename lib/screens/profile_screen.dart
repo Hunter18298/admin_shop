@@ -14,11 +14,8 @@ class ProfileScreen extends StatelessWidget {
     Size size = MediaQuery.of(context).size;
     final screenWidth = size.width;
     final screenHeight = size.height;
-    return StreamBuilder<DocumentSnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('user')
-            .doc(userCredential)
-            .snapshots(),
+    return StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance.collection('items').snapshots(),
         builder: (context, snapshot) {
           final snapStatus = snapshot.connectionState;
           switch (snapStatus) {
@@ -36,50 +33,44 @@ class ProfileScreen extends StatelessWidget {
               if (!snapshot.hasData) {
                 return const Text('Check your connection');
               }
-              final snap = snapshot.data!.data()! as Map<String, dynamic>;
-              return ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                primary: true,
-                children: [
-                  SizedBox(
-                    height: screenHeight * 0.2,
-                    child: Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: screenWidth * 0.3),
-                      child: CircleAvatar(
-                        backgroundImage: NetworkImage(
-                          snap['image'],
-                        ),
-                        backgroundColor: Colors.blueGrey,
-                        radius: 50.0,
+              final snap = snapshot.data!.docs;
+              return ListView.builder(
+                itemCount: snap.length,
+                itemBuilder: (context, index) {
+                  final itemsData = snap[index];
+
+                  return Dismissible(
+                    key: UniqueKey(),
+                    background: Material(
+                        color: Colors.red.shade400,
+                        child: const Icon(Icons.delete)),
+                    onDismissed: (dismissed) async {
+                      await itemsData.reference.delete().then((value) {
+                        return ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'Thanks For Your Order Wait We Will Call You As Soon As Possible '),
+                          ),
+                        );
+                      });
+                    },
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundImage: NetworkImage(itemsData['image']),
+                      ),
+                      title: Text(itemsData['name']),
+                      subtitle: Text(
+                        "${itemsData['price'].toString()} \$",
+                        style: GoogleFonts.montserrat(
+                            color: Colors.blueAccent.shade700),
+                      ),
+                      trailing: Text(
+                        "x2",
+                        style: GoogleFonts.montserrat(color: Colors.black),
                       ),
                     ),
-                  ),
-                  SizedBox(
-                    height: screenHeight * 0.03,
-                  ),
-                  Text(
-                    'Account Details',
-                    style: GoogleFonts.montserrat(
-                        color: Colors.black, fontSize: 20),
-                  ),
-                  Divider(
-                    color: Colors.black.withAlpha(150),
-                  ),
-                  Text(
-                    "Email: ${snap['email']} ",
-                    style: GoogleFonts.montserrat(
-                        color: Colors.black, fontSize: 18),
-                  ),
-                  SizedBox(
-                    height: screenHeight * 0.03,
-                  ),
-                  Text(
-                    "Password: ${snap['password']} ",
-                    style: GoogleFonts.montserrat(
-                        color: Colors.black, fontSize: 18),
-                  ),
-                ],
+                  );
+                },
               );
           }
         });

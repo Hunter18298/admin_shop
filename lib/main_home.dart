@@ -15,8 +15,7 @@ class HomePage extends StatefulWidget {
 
 enum Titles {
   home,
-  services,
-  categories,
+  items,
 }
 
 class _HomePageState extends State<HomePage> {
@@ -48,7 +47,7 @@ class _HomePageState extends State<HomePage> {
         return "Home";
 
       case 1:
-        return "Cart";
+        return "Items";
 
       default:
         break;
@@ -110,9 +109,9 @@ class _HomePageState extends State<HomePage> {
                   label: "Home"),
               BottomNavigationBarItem(
                   icon: Icon(
-                    Icons.shopping_cart,
+                    Icons.propane,
                   ),
-                  label: "Cart"),
+                  label: "Items"),
             ],
           ),
         ),
